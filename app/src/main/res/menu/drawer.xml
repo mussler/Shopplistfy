@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/drawer_cat_groceries"
+            android:checked="false"
+            android:icon="@drawable/ic_local_grocery_store"
+            android:title="@string/drawer_cat_groceries" />
+
+        <item
+            android:id="@+id/drawer_cat_electronics"
+            android:checked="false"
+            android:icon="@drawable/ic_local_convenience_store"
+            android:title="@string/drawer_cat_electronics" />
+
+        <item
+            android:id="@+id/drawer_cat_other"
+            android:checked="false"
+            android:icon="@drawable/ic_local_play"
+            android:title="@string/drawer_cat_other" />
+
+        <item
+            android:id="@+id/drawer_settings"
+            android:checked="false"
+            android:checkable="false"
+            android:icon="@drawable/ic_settings"
+            android:title="@string/settings" />
+        <item
+            android:id="@+id/drawer_account"
+            android:checked="false"
+            android:checkable="false"
+            android:icon="@drawable/common_google_signin_btn_icon_dark_normal"
+            android:title="@string/drawer_account" />
+
+    </group>
+</menu>
