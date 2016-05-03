@@ -97,6 +97,7 @@ public class RecyclerViewMainListAdapter extends RecyclerView.Adapter<RecyclerVi
     public void setData(ArrayList<ProductList> newData){
        this.data = new ArrayList<>(newData);
     }
+    public void setSettings(Settings settings){this.settings = settings;}
     public ProductList removeItem(int position){
         final ProductList pL = data.remove(position);
         notifyItemRemoved(position);
@@ -200,13 +201,19 @@ public class RecyclerViewMainListAdapter extends RecyclerView.Adapter<RecyclerVi
                             .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     saveBackup(pos);
-                                    removeItem(pos);
+                                    data.remove(pos);
+                                    notifyItemRemoved(pos);
+                                    DataSet.getData().remove(pos);
+                                    DataSet.saveCache();
                                     Snackbar snackbar = Snackbar
                                             .make(parent, R.string.item_deleted, Snackbar.LENGTH_LONG)
                                             .setAction(R.string.undo, new View.OnClickListener() {
                                                 @Override
                                                 public void onClick(View view) {
-                                                    addItem(backupPos, backup);
+                                                    data.add(backupPos, backup);
+                                                    notifyItemInserted(backupPos);
+                                                    DataSet.getData().add(backupPos, backup);
+                                                    DataSet.saveCache();
                                                     Snackbar snackbar = Snackbar.make(view, R.string.item_restored, Snackbar.LENGTH_SHORT);
                                                     snackbar.show();
                                                 }
@@ -221,7 +228,7 @@ public class RecyclerViewMainListAdapter extends RecyclerView.Adapter<RecyclerVi
                             })
                             .show();
                     ((MainActivity)parent.getContext()).updateUI();
-                    DataSet.getInstance().saveCache();
+
                     break;
             }
         }

@@ -161,7 +161,7 @@ public class RecyclerViewListAdapter extends RecyclerView.Adapter<RecyclerViewLi
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                         productList.getProduct(getAdapterPosition()).setCheckBox(b);
-                    DataSet.getInstance().saveCache();
+                    DataSet.saveCache();
                 }
             });
         }
@@ -180,15 +180,18 @@ public class RecyclerViewListAdapter extends RecyclerView.Adapter<RecyclerViewLi
                             .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     saveBackup(getAdapterPosition());
-
-                                    removeItem(getAdapterPosition());
+                                    productList.removeProduct(getAdapterPosition());
+                                    notifyItemRemoved(getAdapterPosition());
+                                    DataSet.saveCache();
                                     final View parent = v;
                                     Snackbar snackbar = Snackbar
                                             .make(parent, R.string.item_deleted, Snackbar.LENGTH_LONG)
                                             .setAction(R.string.undo, new View.OnClickListener() {
                                                 @Override
                                                 public void onClick(View view) {
-                                                    addItem(backupPos, backup);
+                                                   productList.addProduct(backup, backupPos);
+                                                    notifyItemInserted(backupPos);
+                                                    DataSet.saveCache();
                                                     Snackbar snackbar = Snackbar.make(view, R.string.item_restored, Snackbar.LENGTH_SHORT);
                                                     snackbar.show();
                                                 }

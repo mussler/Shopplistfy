@@ -62,8 +62,8 @@ public class ViewListActivity extends AppCompatActivity implements  View.OnClick
         Bundle bundle = getIntent().getExtras();
         int position = bundle.getInt("data_position");
             dataSet = DataSet.getInstance();
-            data = dataSet.getData().get(position);
-            settings = dataSet.getSettings();
+            data = DataSet.getData().get(position);
+            settings = DataSet.getSettings();
         getSupportActionBar().setTitle(data.getName());
         recyclerViewListAdapter = new RecyclerViewListAdapter(data, settings);
         recyclerView = (RecyclerView) findViewById(R.id.list_view);

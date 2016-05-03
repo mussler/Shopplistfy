@@ -44,12 +44,12 @@ import javax.xml.transform.stream.StreamResult;
 public final class DataSet extends Application{
     private static DataSet dataSet = null;
     private static ArrayList<ProductList> data;
-    private String userId = "0";
+    private static String userId = "0";
     private static String token;
     private static Settings settings;
     private static User user = null;
-    Firebase ref = new Firebase("https://shoplistify.firebaseio.com/shoplistify/users");
-    Firebase userRef;
+    static Firebase ref = new Firebase("https://shoplistify.firebaseio.com/shoplistify/users");
+    static Firebase userRef;
     private AuthData mAuthData;
     private Firebase.AuthStateListener mAuthStateListener;
 
@@ -74,7 +74,7 @@ public final class DataSet extends Application{
     }
 
 
-    public boolean initFirebase() {
+    public static boolean initFirebase() {
         Log.e("Firebase", "Init");
         ref.authWithOAuthToken("google", token, new Firebase.AuthResultHandler() {
             @Override
@@ -94,7 +94,7 @@ public final class DataSet extends Application{
         return true;
     }
 
-    ValueEventListener userInitListener = new ValueEventListener() {
+    static ValueEventListener userInitListener = new ValueEventListener() {
 
             @Override
             public void onDataChange(DataSnapshot snapshot) {
@@ -134,24 +134,32 @@ public final class DataSet extends Application{
             }
         };
 
-    public void saveCache()  {
+    public static void saveCache()  {
+        Log.e("Firebase", "Starting Save");
         userRef.child("Settings").setValue(settings);
-        for (ProductList pl : data
-                ) {
+        userRef.child("ProductLists").removeValue();
+        for (ProductList pl : data) {
+
+            Log.e("Firebase", "Have Some Product Lists");
             if(pl.getPushHash()== null){
+
+                Log.e("Firebase", "No Hash set, creating hash.");
                 Firebase plRef = userRef.child("ProductLists").push();
                 pl.setPushHash(plRef.getKey());
             }
             Firebase plRef = userRef.child("ProductLists").child(pl.getPushHash());
             plRef.child("name").setValue(pl.getName());
             plRef.child("category").setValue(pl.getCategory());
-            for (Product p: pl.getProducts()
-                 ) {
-                if(p.getPushHash()==null){
+            for (Product p: pl.getProducts()               ) {
+
+                Log.e("Firebase", "Found some products");
+                if (p.getPushHash() == null) {
+
+                    Log.e("Firebase", "No product hash, creating");
                     Firebase pRef = plRef.child("Products").push();
                     p.setPushHash(pRef.getKey());
                 }
-             Firebase pRef = plRef.child("Products").child(p.getPushHash());
+                Firebase pRef = plRef.child("Products").child(p.getPushHash());
                 pRef.child("name").setValue(p.getName());
                 pRef.child("quantity").setValue(p.getQuantity());
                 pRef.child("checkbox").setValue(p.getCheckBox());
@@ -168,13 +176,19 @@ public final class DataSet extends Application{
     }
     public static synchronized Settings getSettings(){return settings;}
     public static synchronized void setSettings(Settings _settings){ settings = _settings;}
+    public static synchronized boolean setInstance(){
+        if (dataSet == null) {
+            dataSet = new DataSet();
+        }
+        return true;
+    }
     public static synchronized DataSet getInstance() {
         Log.e("DATASET LOG", "Getting DataSet Instance");
         if (dataSet == null) {
             dataSet = new DataSet();
         }
 
-        Log.e("DATASET LOG", "Returning dataset");
+        Log.e("DATASET LOG", "Returning dataset, size: "+data.size());
         return dataSet;
     }
 

@@ -135,10 +135,11 @@ public class IntroActivity extends AppCompatActivity implements View.OnClickList
             @Override
             protected void onPostExecute(String token) {
                 if (token != null) {
-                    data = DataSet.getInstance();
-                    data.setToken(token);
-                    data.initFirebase();
-                    data.setUser(user);
+                    if(DataSet.setInstance()) {
+                        DataSet.setToken(token);
+                        DataSet.initFirebase();
+                        DataSet.setUser(user);
+                    }
                 } else if (errorMessage != null) {
                 }
                 finish();

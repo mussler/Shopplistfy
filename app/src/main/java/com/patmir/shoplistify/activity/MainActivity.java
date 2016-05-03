@@ -92,15 +92,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        dataSet = DataSet.getInstance();
-        settings = dataSet.getSettings();
-        lists_bag = dataSet.getData();
-        layoutManager = new LinearLayoutManager(this);
-        recyclerViewMainListAdapter = new RecyclerViewMainListAdapter(lists_bag, settings);
-        recyclerView = (RecyclerView) findViewById(R.id.list_main);
-        recyclerView.setAdapter(recyclerViewMainListAdapter);
-        recyclerView.setLayoutManager(layoutManager);        //Listeners
-        findViewById(R.id.new_list_btn).setOnClickListener(this);
         initDrawer();
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail().requestId().requestProfile()
@@ -110,7 +101,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
-        if (!mGoogleApiClient.isConnected()) {
+        /*if (!mGoogleApiClient.isConnected()) {
             OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
             if (opr.isDone()) {
                 // If the user's cached credentials are valid, the OptionalPendingResult will be "done"
@@ -136,8 +127,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
 
-        }
+        }*/
+        DataSet.setInstance();
+        settings = DataSet.getSettings();
+        lists_bag = DataSet.getData();
+        Log.e("Main", "Bag Size: "+lists_bag.size());
+        layoutManager = new LinearLayoutManager(this);
+        recyclerView = (RecyclerView) findViewById(R.id.list_main);
+        recyclerView.setLayoutManager(layoutManager);        //Listeners
+        findViewById(R.id.new_list_btn).setOnClickListener(this);
+        recyclerViewMainListAdapter = new RecyclerViewMainListAdapter(lists_bag, settings);
+        recyclerView.setAdapter(recyclerViewMainListAdapter);
         updateUI();
+
+
+
+
     }
 
     private void initDrawer(){
@@ -195,9 +200,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         return true;
                     case R.id.drawer_account:
                         Log.e("Drawer", "Clicked account");
-                        if(mGoogleApiClient.isConnected()){
+                        if(DataSet.getUser() != null){
                             Log.e("Drawer", "Not Null");
-                            Log.e("Drawer", acct.getDisplayName());
                             signOut();
                         } else {
                             Log.e("Drawer", "Null");
@@ -224,8 +228,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 TextView email = (TextView) findViewById(R.id.user_header_email);
                 CircleImageView profile_picture = (CircleImageView) findViewById(R.id.user_header_profile_image);
             if(username != null){
-                if (dataSet.getUser() != null) {
-                    User user = dataSet.getUser();
+                if (DataSet.getUser() != null) {
+                    User user = DataSet.getUser();
                     Picasso.with(getBaseContext()).load(user.getPic_url()).into(profile_picture);
                     username.setText(user.getName());
                     email.setText(user.getEmail());
@@ -246,9 +250,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     empty_info.setVisibility(View.VISIBLE);
                 } else {
                     empty_info.setVisibility(View.GONE);
-                    recyclerViewMainListAdapter.setData(lists_bag);
-                    recyclerViewMainListAdapter.notifyItemInserted(0);
-                    recyclerView.scrollToPosition(0);
+                    recyclerViewMainListAdapter.setData(DataSet.getData());
+                    recyclerViewMainListAdapter.setSettings(DataSet.getSettings());
+                    recyclerViewMainListAdapter.animateTo(DataSet.getData());
 
                 }
 
@@ -379,10 +383,10 @@ setAccountDisplay();
                 if (name.getText().toString().trim().length() > 0) {
                     ProductList pL = new ProductList(name.getText().toString(), cat.getSelectedItemPosition());
                     lists_bag.add(0, pL );
-                    recyclerViewMainListAdapter.setData(lists_bag);
-                    recyclerViewMainListAdapter.notifyItemInserted(0);
-                    recyclerView.scrollToPosition(0);
-                    dataSet.saveCache();
+                    Log.e("New List", "Bag size: "+lists_bag.size());
+                    DataSet.setData(lists_bag);
+                    Log.e("New List", "Dataset data size: "+DataSet.getData().size());
+                    DataSet.saveCache();
                     updateUI();
                     wantToCloseDialog = true;
                 } else {
@@ -486,11 +490,12 @@ setAccountDisplay();
             @Override
             protected void onPostExecute(String token) {
                 if (token != null) {
-                    dataSet = DataSet.getInstance();
-                    dataSet.setToken(token);
-                    dataSet.setUser(user);
-                    if(dataSet.initFirebase()){
-                        updateUI();
+                    if(DataSet.setInstance()) {
+                        DataSet.setToken(token);
+                        DataSet.setUser(user);
+                        if (DataSet.initFirebase()) {
+                            updateUI();
+                        }
                     }
                 } else if (errorMessage != null) {
                 }
@@ -547,6 +552,7 @@ setAccountDisplay();
                 new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
+                        DataSet.setUser(null);
                       updateUI();
                     }
                 });
